@@ -20,7 +20,7 @@ struct Card
 
     explicit Card(Symbol_t sym, int val)
     {
-        if(val < 1 || val > 12)
+        if(val < 2 || val > 14)
         {
             throw std::runtime_error("Wrong card value!");
         }
@@ -56,16 +56,16 @@ struct Card
 
         switch (c.value)
         {
-        case 10:
+        case 11:
             print_value = "Jack";
             break;
-        case 11:
+        case 12:
             print_value = "Queen";
             break;
-        case 12:
+        case 13:
             print_value = "King";
             break;
-        case 13:
+        case 14:
             print_value = "Ass";
             break;
         default:
@@ -86,10 +86,10 @@ struct Deck
     {
         for (int intSymbol = 0; intSymbol < 4; intSymbol++)
         {
-            for (size_t value = 0; value < 12; value++)
+            for (size_t value = 2; value < 15; value++)
             {
                 Symbol_t symbol = static_cast<Symbol_t>(intSymbol);
-                cards.push_back(Card{symbol, value + 1});
+                cards.push_back(Card{symbol, value});
             }
         }
     }
@@ -97,7 +97,7 @@ struct Deck
     {
         for (size_t i = 0; i < 52; i++)
         {
-            std::cout << "card" << i + 1 << cards[i];
+            std::cout << "card" << i + 1 << "\t" << cards[i];
         }
         
     }
