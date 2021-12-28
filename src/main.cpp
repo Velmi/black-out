@@ -3,112 +3,187 @@
 #include<array>
 #include<vector>
 #include<fmt/format.h>
+#include"card.hpp"
+#include"player.hpp"
 
 enum
 {
-    Hearts,
-    Diamonds,
-    Clubs,
-    Spades
-} typedef Symbol_t;
+    Init,
+    Players_turn,
+    Dealers_turn,
+    Deck_check
+}typedef GameStates_t;
 
-
-struct Card
-{
-    Symbol_t symbol;
-    int value;
-
-    explicit Card(Symbol_t sym, int val)
-    {
-        if(val < 2 || val > 14)
-        {
-            throw std::runtime_error("Wrong card value!");
-        }
-        if(sym > 3 || sym < 0)
-        {
-            throw std::runtime_error("Wrong card symbol!");
-        }
-        this->value = val;
-        this->symbol = sym;
-    }
-
-    friend std::ostream& operator<<(std::ostream& os, Card const& c)
-    {
-        std::string print_symbol;
-        std::string print_value;
-        switch (c.symbol)
-        {
-        case Hearts:
-            print_symbol = "Hearts";
-            break;
-        case Diamonds:
-            print_symbol = "Diamonds";
-            break;
-        case Clubs:
-            print_symbol = "Clubs";
-            break;
-        case Spades:
-            print_symbol = "Spades";
-            break;
-        default:
-            break;
-        }
-
-        switch (c.value)
-        {
-        case 11:
-            print_value = "Jack";
-            break;
-        case 12:
-            print_value = "Queen";
-            break;
-        case 13:
-            print_value = "King";
-            break;
-        case 14:
-            print_value = "Ass";
-            break;
-        default:
-            print_value = std::to_string(c.value);
-            break;
-        }
-
-        os << print_symbol << ", " << print_value << "\n";
-        return os;
-    }
-};
-
-struct Deck
-{
-    std::vector<Card> cards;
-
-    void init_deck()
-    {
-        for (int intSymbol = 0; intSymbol < 4; intSymbol++)
-        {
-            for (size_t value = 2; value < 15; value++)
-            {
-                Symbol_t symbol = static_cast<Symbol_t>(intSymbol);
-                cards.push_back(Card{symbol, value});
-            }
-        }
-    }
-    void print()
-    {
-        for (size_t i = 0; i < 52; i++)
-        {
-            std::cout << "card" << i + 1 << "\t" << cards[i];
-        }
-        
-    }
-
-};
 
 int main()
 {
     fmt::print("Welcome to Black-Jack! \n");
-    Deck d;
-    d.init_deck();
-    d.print();
+    Player p {0, 0};
+    Player d {0, 0};
+
+    Deck deck;
+    Deck table;
+    Deck trash;
+    GameStates_t current_state = Init;
+    GameStates_t next_state;
+
+    // State machine
+    while(1)
+    {
+        switch (current_state)
+        {
+        case Init:
+            deck.init_deck();
+            deck.shuffle(100);
+            p.score = 0;
+            d.score = 0;
+            next_state = Players_turn;
+            current_state = next_state;
+            break;
+
+        case Players_turn:
+            char input;
+            do
+            {
+                put_on_table(deck, table);
+                p.score = p.score + table.cards.back().value;
+
+                if(p.score == 21)
+                {
+                    break;
+                }
+
+                do
+                {
+                    fmt::print("Next card? (y or n): ");
+                    std::cin >> input;
+                } while ((input != 'y') || (input != 'n'));
+            } while((input == 'y') && p.score < 21);
+
+            if(p.score == 21)
+            {
+                p.rounds_won++;
+                std::cout << "21, Player wins! \n";
+                next_state = Deck_check;
+                current_state = next_state;
+                break;
+            }
+            if(p.score > 21)
+            {
+                d.rounds_won++;
+                std::cout << "Over 21, Dealer wins! \n";
+                next_state = Deck_check;
+                current_state = next_state;
+                break;
+            }
+            else
+            {
+                next_state = Dealers_turn;
+                current_state = next_state;
+                break;
+            }
+        
+        case Dealers_turn:
+            do
+            {
+                put_on_table(deck, table);
+                d.score = d.score + table.cards.back().value;
+
+                if(d.score == 21)
+                {
+                    break;
+                }
+
+            } while(d.score >= 17);
+
+            if((d.score == 21))
+            {
+                d.rounds_won++;
+                std::cout << "21, Dealer wins! \n";
+                next_state = Deck_check;
+                current_state = next_state;
+                break;
+            }
+        default:
+            break;
+        }
+    }
+    
+    deck.init_deck();
+    deck.shuffle(100);
+    std::cout << deck;
+    //deck.print();
+
+    
     return 0;
 }
+
+/*
+    while(true)
+    {
+        static int player_sum = 0;
+        // player round
+        while(true)
+        {
+            put_on_table(deck, table);  // to-do: check if deck is empty, if yes, new deck
+            table.print();
+            player_sum = player_sum + table.cards.back().value;
+            std::cout << "Player sum: " << player_sum << "\n";
+            fmt::print("Next card?(y or n): ");
+            char input;
+            std::cin >> input;
+            if((input == 'n') || (input == 'N') || (player_sum > 21))
+            {
+                break;
+            }
+        }
+        if(player_sum == 21)
+        {
+            fmt::print("21! Player wins! \n");
+            // to-do: player gets 1 point or something...
+            break;
+        }
+        if(player_sum > 21)
+        {
+            fmt::print("Croupier wins!");
+        }
+
+        // croupier round
+        static int croupier_sum = 0;
+        for(int j; j < 4; j++)
+        {
+            put_on_table(deck, table);  // to-do: check if deck is empty, if yes, new deck
+            table.print();
+            croupier_sum = croupier_sum + table.cards.back().value;
+            if((croupier_sum > 21) || (croupier_sum == 21))
+            {
+                break;
+            }
+        }
+        if(croupier_sum == 21)
+        {
+            fmt::print("21!");
+            // to-do: croupier gets 1 point or something...
+            break;
+        }
+        if(croupier_sum > 21)
+        {
+            fmt::print("Player wins! \n");
+        }
+        else
+        {
+            if(player_sum < croupier_sum)
+            {
+                fmt::print("Croupier wins! \n");
+            }
+            if(player_sum > croupier_sum)
+            {
+                fmt::print("Player wins! \n");
+            }
+            if(player_sum == croupier_sum)
+            {
+                fmt::print("Stand-off! \n");
+            }
+        }
+    }
+    */
