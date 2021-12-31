@@ -179,9 +179,19 @@ struct Deck
             rand1 = get_random(0, deck_size - 1);
             rand2 = get_random(0, deck_size - 1);
             swap<Card>(cards.at(rand1), cards.at(rand2));
-        }        
+        }
+        fmt::print("Deck is shuffled \n");
     }
 
+    size_t size()
+    {
+        return cards.size();
+    }
+
+    Card back()
+    {
+        return cards.back();
+    }
 };
 
 /**
@@ -198,7 +208,7 @@ int put_on_table(Deck& deck, Deck& table)
         Card buffer =  deck.cards.back();
         deck.cards.pop_back();
         table.cards.push_back(buffer);
-        fmt::print("Card put on the table:");
+        fmt::print("Card put on the table: ");
         std::cout << buffer << "\n";
         return 1;
     }
