@@ -131,7 +131,6 @@ struct Card
 struct Deck
 {
     std::vector<Card> cards;
-
     friend std::ostream& operator<<(std::ostream& os, Deck const& d)
     {
         for (size_t i = 0; i < d.cards.size(); i++)
@@ -183,6 +182,12 @@ struct Deck
         fmt::print("Deck is shuffled \n");
     }
 
+    template<typename P>
+    void aShuffle(P alg, int iterations)
+    {
+        alg(cards.begin(), cards.end(), 1);
+    }
+
     size_t size()
     {
         return cards.size();
@@ -191,6 +196,25 @@ struct Deck
     Card back()
     {
         return cards.back();
+    }
+};
+
+struct Shuffle_own
+{
+    void operator()(std::vector<Card>::iterator begin, std::vector<Card>::iterator end, int interations)
+    {
+        int deck_size = end - begin;
+        std::cout << "deck size: " << deck_size << "\n";
+        int rand1;
+        int rand2;
+
+        for (; begin != end; ++begin)
+        {
+            rand1 = get_random(0, deck_size - 1);
+            rand2 = get_random(0, deck_size - 1);
+            //swap<Card>(*(&begin + rand1), *(&begin + rand2));
+            std::cout << "one iteration" << deck_size << "\n";
+        }
     }
 };
 
