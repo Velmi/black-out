@@ -185,7 +185,7 @@ struct Deck
     template<typename P>
     void aShuffle(P alg, int iterations)
     {
-        alg(cards.begin(), cards.end(), 1);
+        alg(cards, iterations);
     }
 
     size_t size()
@@ -199,21 +199,42 @@ struct Deck
     }
 };
 
-struct Shuffle_own
+/**
+ * @brief swaps two random cards of the deck
+ */
+struct Shuffle_TRC
 {
-    void operator()(std::vector<Card>::iterator begin, std::vector<Card>::iterator end, int interations)
+    void operator()(std::vector<Card>& cards, int iterations)
     {
-        int deck_size = end - begin;
-        std::cout << "deck size: " << deck_size << "\n";
+        size_t deck_size = cards.size();
+        //std::cout << "deck size: " << deck_size << "\n";
         int rand1;
         int rand2;
 
-        for (; begin != end; ++begin)
+        for (size_t i = 0; i < iterations; i++)
         {
             rand1 = get_random(0, deck_size - 1);
             rand2 = get_random(0, deck_size - 1);
-            //swap<Card>(*(&begin + rand1), *(&begin + rand2));
-            std::cout << "one iteration" << deck_size << "\n";
+            swap<Card>(cards.at(rand1), cards.at(rand2));
+        }
+    }
+};
+
+/**
+ * @brief swaps the first card with a random card of the deck (Fisher-Yates algorithm)
+ */
+struct Shuffle_FY
+{
+    void operator()(std::vector<Card>& cards, int iterations)
+    {
+        size_t deck_size = cards.size();
+        //std::cout << "deck size: " << deck_size << "\n";
+        int rand1;
+
+        for (size_t i = 0; i < iterations; i++)
+        {
+            rand1 = get_random(0, deck_size - 1);
+            swap<Card>(cards.at(rand1), cards.at(0));
         }
     }
 };
