@@ -2,10 +2,9 @@
 
 #include<iostream>
 #include<vector>
-#include<list>
 #include<random>
 #include<string>
-#include<fmt/format.h>
+//#include<fmt/format.h>
 
 enum
 {
@@ -167,23 +166,8 @@ struct Deck
         generate_face_cards();
     }
 
-    void shuffle(int iterations)   // to-do: maybe shuffle method as predikat
-    {
-        int deck_size = cards.size();
-        int rand1;
-        int rand2;
-
-        for (unsigned int i = 0; i < iterations; i++)
-        {
-            rand1 = get_random(0, deck_size - 1);
-            rand2 = get_random(0, deck_size - 1);
-            swap<Card>(cards.at(rand1), cards.at(rand2));
-        }
-        fmt::print("Deck is shuffled \n");
-    }
-
     template<typename P>
-    void aShuffle(P alg, int iterations)
+    void shuffle(P alg, int iterations)
     {
         alg(cards, iterations);
     }
@@ -217,6 +201,7 @@ struct Shuffle_TRC
             rand2 = get_random(0, deck_size - 1);
             swap<Card>(cards.at(rand1), cards.at(rand2));
         }
+        std::cout << "Deck is shuffled \n";
     }
 };
 
@@ -236,12 +221,12 @@ struct Shuffle_FY
             rand1 = get_random(0, deck_size - 1);
             swap<Card>(cards.at(rand1), cards.at(0));
         }
+        std::cout << "Deck is shuffled \n";
     }
 };
 
 /**
  * @brief puts one card from the deck on the table and prints it
- * 
  * @param deck 
  * @param table 
  * @return int, -1 if deck is empty, 1 of deck is not empty
@@ -250,10 +235,10 @@ int put_on_table(Deck& deck, Deck& table)
 {
     if(deck.cards.empty() == false)
     {
-        Card buffer =  deck.cards.back();
+        Card buffer = deck.cards.back();
         deck.cards.pop_back();
         table.cards.push_back(buffer);
-        fmt::print("Card put on the table: ");
+        std::cout << "Card put on the table: ";
         std::cout << buffer << "\n";
         return 1;
     }
