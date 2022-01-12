@@ -37,7 +37,7 @@ int main()
             std::cout << "\n +++ New game +++ \n";
             move_to_trash(table);
             deck.init_deck();
-            deck.shuffle(Shuffle_FY{}, 100);
+            deck.shuffle(FYShuffle, 100);
             next_state = Players_turn;
             current_state = next_state;
             break;

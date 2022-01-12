@@ -21,14 +21,6 @@ enum
     Ace
 } typedef Name_t;
 
-template<typename T>
-void swap(T& a, T& b)
-{
-    T buf = a;
-    a = b;
-    b = buf;
-}
-
 int get_random(int a, int b)
 {
     int rand;
@@ -169,6 +161,14 @@ struct Deck
     template<typename P>
     void shuffle(P alg, int iterations)
     {
+        /* Hallo Christoph,
+         * hier eine sinnvolle shuffle-Implementierung, ich habe
+         * aber für meine (weniger sinnvolle) entschieden, weil ich dann
+         * da schön Funktionen als Templateparameter übergeben kann
+        std::random_device rand_dev;
+        std::mt19937 rng(rand_dev());
+        std::shuffle(cards.begin(), cards.end(), rng);
+         */
         alg(cards, iterations);
     }
 
@@ -186,43 +186,35 @@ struct Deck
 /**
  * @brief swaps two random cards of the deck
  */
-struct Shuffle_TRC
+auto TRCShuffle = [](std::vector<Card>& cards, std::size_t iterations)
 {
-    void operator()(std::vector<Card>& cards, int iterations)
-    {
-        size_t deck_size = cards.size();
-        //std::cout << "deck size: " << deck_size << "\n";
-        int rand1;
-        int rand2;
+    size_t deck_size = cards.size();
+    int rand1;
+    int rand2;
 
-        for (size_t i = 0; i < iterations; i++)
-        {
-            rand1 = get_random(0, deck_size - 1);
-            rand2 = get_random(0, deck_size - 1);
-            swap<Card>(cards.at(rand1), cards.at(rand2));
-        }
-        std::cout << "Deck is shuffled \n";
+    for (std::size_t i = 0; i < iterations; i++)
+    {
+        rand1 = get_random(0, deck_size - 1);
+        rand2 = get_random(0, deck_size - 1);
+        std::swap<Card>(cards.at(rand1), cards.at(rand2));
     }
+    std::cout << "Deck is shuffled \n";
 };
 
 /**
  * @brief swaps the first card with a random card of the deck (Fisher-Yates algorithm)
  */
-struct Shuffle_FY
+auto FYShuffle = [](std::vector<Card>& cards, std::size_t iterations)
 {
-    void operator()(std::vector<Card>& cards, int iterations)
-    {
-        size_t deck_size = cards.size();
-        //std::cout << "deck size: " << deck_size << "\n";
-        int rand1;
+    std::size_t deck_size = cards.size();
+    int rand1;
 
-        for (size_t i = 0; i < iterations; i++)
-        {
-            rand1 = get_random(0, deck_size - 1);
-            swap<Card>(cards.at(rand1), cards.at(0));
-        }
-        std::cout << "Deck is shuffled \n";
+    for (std::size_t i = 0; i < iterations; i++)
+    {
+        rand1 = get_random(0, deck_size - 1);
+        std::swap<Card>(cards.at(rand1), cards.at(0));
     }
+    std::cout << "Deck is shuffled \n";
 };
 
 /**
@@ -233,7 +225,7 @@ struct Shuffle_FY
  */
 int put_on_table(Deck& deck, Deck& table)
 {
-    if(deck.cards.empty() == false)
+    if(!deck.cards.empty())
     {
         Card buffer = deck.cards.back();
         deck.cards.pop_back();
@@ -250,7 +242,7 @@ int put_on_table(Deck& deck, Deck& table)
 
 void move_to_trash(Deck& table)
 {
-    while(table.cards.empty() == false)
+    while(!table.cards.empty())
     {
         table.cards.pop_back();
     }
