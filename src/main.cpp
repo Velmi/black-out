@@ -1,35 +1,24 @@
-#include<iostream>
-#include<string>
-#include<array>
-#include<vector>
+#include <iostream>
+#include <string>
+#include <array>
+#include <vector>
 //#include<fmt/format.h>
-#include"card.hpp"
-#include"player.hpp"
-
-enum
-{
-    Init,
-    Players_turn,
-    Dealers_turn,
-    Deck_check
-}typedef GameStates_t;
+#include "game.hpp"
+#include "card.hpp"
+#include "player.hpp"
 
 
 int main()
 {
     std::cout << "Welcome to Black-Jack! \n";
-    Player p (0, 0, 1000);
-    Dealer d {0};
-    p.score = 0;
-    d.score = 0;
-
     Deck deck;
     Deck table;
+    GameManager game{Player(1000), Dealer{0}, deck, table};
     GameStates_t current_state = Init;
     GameStates_t next_state;
 
     // state machine
-    while(1)
+    while (1)
     {
         switch (current_state)
         {
@@ -70,7 +59,7 @@ int main()
                 std::cin >> input;
             }
 
-            if(p.score == 21)
+            if (p.score == 21)
             {
                 p.rounds_won++;
                 std::cout << "21, Player wins! \n";
@@ -78,7 +67,7 @@ int main()
                 current_state = next_state;
                 break;
             }
-            if(p.score > 21)
+            if (p.score > 21)
             {
                 std::cout << "Over 21, Dealer wins! \n";
                 next_state = Deck_check;
@@ -92,7 +81,7 @@ int main()
                 current_state = next_state;
                 break;
             }
-        
+
         case Dealers_turn:
             std::cout << "\n  Dealers turn  \n";
             d.score = 0;
@@ -107,14 +96,14 @@ int main()
                 }
             }
 
-            if(d.score == 21)
+            if (d.score == 21)
             {
                 std::cout << "21, Dealer wins! \n";
                 next_state = Deck_check;
                 current_state = next_state;
                 break;
             }
-            if(d.score > 21)
+            if (d.score > 21)
             {
                 p.rounds_won++;
                 std::cout << "Over 21, Player wins! \n";
@@ -158,12 +147,12 @@ int main()
                 current_state = next_state;
                 break;
             }
-            
+
         default:
             break;
         }
     }
-    //end state machine
-    
+    // end state machine
+
     return 0;
 }

@@ -1,9 +1,9 @@
 #pragma once
 
-#include<iostream>
-#include<vector>
-#include<random>
-#include<string>
+#include <iostream>
+#include <vector>
+#include <random>
+#include <string>
 //#include<fmt/format.h>
 
 enum
@@ -39,15 +39,15 @@ struct Card
 
     explicit Card(Symbol_t sym, Name_t n)
     {
-        if(sym > 3 || sym < 0)
+        if (sym > 3 || sym < 0)
         {
             throw std::runtime_error("Wrong card symbol!");
         }
-        if(n < 2 || n > 14)
+        if (n < 2 || n > 14)
         {
             throw std::runtime_error("Wrong card name!");
         }
-        if((n == Ace))
+        if ((n == Ace))
         {
             this->value = 11;
         }
@@ -60,11 +60,11 @@ struct Card
     }
     explicit Card(Symbol_t sym, unsigned int val)
     {
-        if(val < 2 || val > 10)
+        if (val < 2 || val > 10)
         {
             throw std::runtime_error("Wrong card value!");
         }
-        if(sym > 3 || sym < 0)
+        if (sym > 3 || sym < 0)
         {
             throw std::runtime_error("Wrong card symbol!");
         }
@@ -73,7 +73,7 @@ struct Card
         this->name = static_cast<Name_t>(val);
     }
 
-    friend std::ostream& operator<<(std::ostream& os, Card const& c)
+    friend std::ostream &operator<<(std::ostream &os, Card const &c)
     {
         std::string print_symbol;
         std::string print_name;
@@ -122,7 +122,8 @@ struct Card
 struct Deck
 {
     std::vector<Card> cards;
-    friend std::ostream& operator<<(std::ostream& os, Deck const& d)
+    
+    friend std::ostream &operator<<(std::ostream &os, Deck const &d)
     {
         for (size_t i = 0; i < d.cards.size(); i++)
         {
@@ -158,11 +159,11 @@ struct Deck
         generate_face_cards();
     }
 
-    template<typename P>
+    template <typename P>
     void shuffle(P alg, int iterations)
     {
         /* Hallo Christoph,
-         * hier eine sinnvolle shuffle-Implementierung, ich habe
+         * hier eine sinnvolle shuffle-Implementierung, ich habe mich
          * aber für meine (weniger sinnvolle) entschieden, weil ich dann
          * da schön Funktionen als Templateparameter übergeben kann
         std::random_device rand_dev;
@@ -186,7 +187,7 @@ struct Deck
 /**
  * @brief swaps two random cards of the deck
  */
-auto TRCShuffle = [](std::vector<Card>& cards, std::size_t iterations)
+auto TRCShuffle = [](std::vector<Card> &cards, std::size_t iterations)
 {
     size_t deck_size = cards.size();
     int rand1;
@@ -204,7 +205,7 @@ auto TRCShuffle = [](std::vector<Card>& cards, std::size_t iterations)
 /**
  * @brief swaps the first card with a random card of the deck (Fisher-Yates algorithm)
  */
-auto FYShuffle = [](std::vector<Card>& cards, std::size_t iterations)
+auto FYShuffle = [](std::vector<Card> &cards, std::size_t iterations)
 {
     std::size_t deck_size = cards.size();
     int rand1;
@@ -219,13 +220,13 @@ auto FYShuffle = [](std::vector<Card>& cards, std::size_t iterations)
 
 /**
  * @brief puts one card from the deck on the table and prints it
- * @param deck 
- * @param table 
+ * @param deck
+ * @param table
  * @return int, -1 if deck is empty, 1 of deck is not empty
  */
-int put_on_table(Deck& deck, Deck& table)
+int put_on_table(Deck &deck, Deck &table)
 {
-    if(!deck.cards.empty())
+    if (!deck.cards.empty())
     {
         Card buffer = deck.cards.back();
         deck.cards.pop_back();
@@ -240,9 +241,9 @@ int put_on_table(Deck& deck, Deck& table)
     }
 }
 
-void move_to_trash(Deck& table)
+void move_to_trash(Deck &table)
 {
-    while(!table.cards.empty())
+    while (!table.cards.empty())
     {
         table.cards.pop_back();
     }

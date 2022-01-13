@@ -1,6 +1,6 @@
 #pragma once
 
-#include"card.hpp"
+#include "card.hpp"
 
 struct Player
 {
@@ -9,10 +9,10 @@ struct Player
     int wallet;
     unsigned int bet;
 
-    Player (unsigned int Score, unsigned int roundsWon, int Wallet)
+    Player(int Wallet)
     {
-        this->score = Score;
-        this->rounds_won = roundsWon;
+        this->score = 0;
+        this->rounds_won = 0;
         this->wallet = Wallet;
     }
 
