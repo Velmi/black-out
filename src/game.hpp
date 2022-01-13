@@ -1,6 +1,7 @@
 #include <iostream>
 #include "player.hpp"
 #include "card.hpp"
+#include "betmanager.hpp"
 
 
 struct GameManager
@@ -14,9 +15,15 @@ struct GameManager
     };
     Player player;
     Dealer dealer;
+    BetManager bet_mng;
     Deck deck;
     Deck table;
     state game_state = state::Init;
+
+    GameManager() :
+            player{1000},
+            bet_mng{player.set_bet(), player.get_money()}
+    {}
 
     void Init()
     {
@@ -115,6 +122,11 @@ struct GameManager
             }
             return 3;
         }
+    }
+
+    void set_bet()
+    {
+
     }
 
     void handler()

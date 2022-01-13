@@ -6,19 +6,40 @@ struct Player
 {
     unsigned int score;
     unsigned int rounds_won;
-    int wallet;
-    unsigned int bet;
+    unsigned int wallet;
 
-    Player(int Wallet)
+    //TODO kjonstúktoir
+
+    unsigned int set_bet()
     {
-        this->score = 0;
-        this->rounds_won = 0;
-        this->wallet = Wallet;
+        unsigned int bet = 0;
+        while (1)
+        {
+            std::cout << "Your wallet: " << wallet << "\nSet your bet: ";
+            std::cin >> bet;
+            if (bet > wallet)
+            {
+                std::cout << "Bet to high for your wallet Geringverdiener!\n";
+                continue;
+            }
+            break;
+        }
+        wallet = wallet - bet;
+        return bet;
     }
 
-    void set_bet(unsigned int Bet)
+    template<bool unfair = true>
+    void get_money(unsigned int money)
     {
-        this->bet = Bet;
+        std::cout << "Get money: " << money << "\t Your wallet: " << wallet << "\n";
+        if constexpr (unfair)
+        {
+            wallet = wallet - money;
+        }
+        else
+        {
+            wallet = wallet + money;
+        }
     }
 };
 

@@ -13,9 +13,7 @@
 int main()
 {
     std::cout << "Welcome to Black-Jack! \n";
-    Deck deck;
-    Deck table;
-    GameManager game{Player(1000), Dealer{0}, deck, table};
+    GameManager game;
 
     while (1)
     {
