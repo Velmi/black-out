@@ -2,94 +2,170 @@
 #include "player.hpp"
 #include "card.hpp"
 
-/*
-enum
-{
-    Init,
-    Players_turn,
-    Dealers_turn,
-    Deck_check
-} typedef GameStates_t;
-*/
 
 struct GameManager
 {
+    enum class state
+    {
+        Init,
+        Players_turn,
+        Dealers_turn,
+        Deck_check
+    };
     Player player;
     Dealer dealer;
     Deck deck;
     Deck table;
+    state game_state = state::Init;
 
-    template <typename P>
-    void execute_state(P state)
+    void Init()
     {
+        std::cout << "\n +++ New game +++ \n";
+        move_to_trash(table);
+        deck.init_deck();
+        deck.shuffle(FYShuffle, 100);
     }
 
-    template <typename P>
-    P rules_check()
+    int Players_turn()
     {
-    }
-};
+        std::cout << "\n  Players turn  \n";
+        player.score = 0;
 
-auto Init = [](Player &player, Dealer &dealer, Deck &deck, Deck &table)
-{
-    std::cout << "\n +++ New game +++ \n";
-    move_to_trash(table);
-    deck.init_deck();
-    deck.shuffle(FYShuffle, 100);
-    next_state = Players_turn;
-    current_state = next_state;
-    break;
-}
-
-auto Players_turn = [](Player &player, Dealer &dealer, Deck &deck, Deck &table)
-{
-    std::cout << "\n  Players turn  \n";
-    p.score = 0;
-
-    for (char input = 'y'; (input == 'y') || (input == 'Y');)
-    {
-        put_on_table(deck, table);
-        if (table.back().name == Ace)
+        for (char input = 'y'; (input == 'y') || (input == 'Y');)
         {
-            char input_ace;
-            std::cout << "Change Ace value from 11 to 1? (y or n): ";
-            std::cin >> input_ace;
-            if ((input_ace == 'y') || (input_ace == 'Y'))
+            put_on_table(deck, table);
+            if (table.back().name == Ace)
             {
-                table.cards.at(table.size() - 1).value = 1;
+                char input_ace;
+                std::cout << "Change Ace value from 11 to 1? (y or n): ";
+                std::cin >> input_ace;
+                if ((input_ace == 'y') || (input_ace == 'Y'))
+                {
+                    table.cards.at(table.size() - 1).value = 1;
+                }
+            }
+            player.score = player.score + table.back().value;
+
+            if (player.score >= 21)
+            {
+                break;
+            }
+
+            std::cout << "Next card (y or n) ?: ";
+            std::cin >> input;
+        }
+
+        if (player.score == 21)
+        {
+            player.rounds_won++;
+            std::cout << "21, Player wins! \n";
+            return 1;
+        }
+        if (player.score > 21)
+        {
+            std::cout << "Over 21, Dealer wins! \n";
+            return 2;
+        }
+        else
+        {
+            std::cout << "Your score: " << player.score << "\n";
+            return 3;
+        }
+    }
+
+    int Dealers_turn()
+    {
+        std::cout << "\n  Dealers turn  \n";
+        dealer.score = 0;
+        while (dealer.score < 17)
+        {
+            put_on_table(deck, table);
+            dealer.score = dealer.score + table.back().value;
+
+            if (dealer.score >= 21)
+            {
+                break;
             }
         }
-        p.score = p.score + table.back().value;
 
-        if (p.score >= 21)
+        if (dealer.score == 21)
         {
-            break;
+            std::cout << "21, Dealer wins! \n";
+            return 1;
         }
-
-        std::cout << "Next card (y or n) ?: ";
-        std::cin >> input;
+        if (dealer.score > 21)
+        {
+            player.rounds_won++;
+            std::cout << "Over 21, Player wins! \n";
+            return 2;
+        }
+        else
+        {
+            std::cout << "Dealers score: " << dealer.score << "\n";
+            if (dealer.score > player.score) {
+                dealer.score++;
+                std::cout << "Dealer wins! \n";
+            }
+            if (player.score > dealer.score) {
+                player.score++;
+                std::cout << "Player wins! \n";
+            }
+            if (player.score == dealer.score) {
+                std::cout << "Draw! \n";
+            }
+            return 3;
+        }
     }
 
-    if (p.score == 21)
+    void handler()
     {
-        p.rounds_won++;
-        std::cout << "21, Player wins! \n";
-        next_state = Deck_check;
-        current_state = next_state;
-        break;
+        switch (game_state)
+        {
+            case state::Init:
+            {
+                Init();
+                game_state = state::Players_turn;
+            }
+                break;
+
+            case state::Players_turn:
+            {
+                switch (Players_turn())
+                {
+                    case 1:
+                    case 2:
+                    {
+                        game_state = state::Deck_check;
+                    }
+                        break;
+                    case 3:
+                    {
+                        game_state = state::Dealers_turn;
+                    }
+                        break;
+                }
+            }
+                break;
+
+            case state::Dealers_turn:
+            {
+                Dealers_turn();
+                game_state = state::Deck_check;
+            }
+                break;
+
+            case state::Deck_check:
+            {
+                if (deck.size() <= 13)
+                {
+                    game_state = state::Init;
+                }
+                else
+                {
+                    game_state = state::Players_turn;
+                }
+            }
+                break;
+        }
     }
-    if (p.score > 21)
-    {
-        std::cout << "Over 21, Dealer wins! \n";
-        next_state = Deck_check;
-        current_state = next_state;
-        break;
-    }
-    else
-    {
-        std::cout << "Your score: " << p.score << "\n";
-        next_state = Dealers_turn;
-        current_state = next_state;
-        break;
-    }
-}
+};

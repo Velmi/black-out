@@ -5,7 +5,7 @@
 #include <random>
 #include <string>
 //#include<fmt/format.h>
-
+//TODO enums to class
 enum
 {
     Hearts,
