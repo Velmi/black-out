@@ -5,26 +5,11 @@
 #include <random>
 #include <string>
 //#include<fmt/format.h>
-//TODO enums to class
-enum
-{
-    Hearts,
-    Diamonds,
-    Clubs,
-    Spades
-} typedef Symbol_t;
-enum
-{
-    Jack = 11,
-    Queen,
-    King,
-    Ace
-} typedef Name_t;
 
 int get_random(int a, int b)
 {
     int rand;
-    std::random_device rand_dev;
+    std::random_device rand_dev; // FIXME: performance!?
     std::mt19937 rng(rand_dev());
     std::uniform_int_distribution<std::mt19937::result_type> dist(a, b);
     rand = dist(rng);
@@ -33,21 +18,37 @@ int get_random(int a, int b)
 
 struct Card
 {
-    Symbol_t symbol;
-    Name_t name;
+    enum class Symbol
+    {
+        Hearts,
+        Diamonds,
+        Clubs,
+        Spades
+    };
+
+    enum class Name
+    {
+        Jack = 11,
+        Queen,
+        King,
+        Ace
+    };
+
+    Symbol symbol;
+    Name name;
     unsigned int value;
 
-    explicit Card(Symbol_t sym, Name_t n)
+    explicit Card(Symbol sym, Name n)
     {
-        if (sym > 3 || sym < 0)
+        if (sym > Symbol::Spades || sym < Symbol::Hearts)
         {
             throw std::runtime_error("Wrong card symbol!");
         }
-        if (n < 2 || n > 14)
+        if (n < Name::Jack || n > Name::Ace)
         {
             throw std::runtime_error("Wrong card name!");
         }
-        if ((n == Ace))
+        if ((n == Name::Ace))
         {
             this->value = 11;
         }
@@ -58,19 +59,19 @@ struct Card
         this->symbol = sym;
         this->name = n;
     }
-    explicit Card(Symbol_t sym, unsigned int val)
+    explicit Card(Symbol sym, unsigned int val)
     {
         if (val < 2 || val > 10)
         {
             throw std::runtime_error("Wrong card value!");
         }
-        if (sym > 3 || sym < 0)
+        if (sym > Symbol::Spades || sym < Symbol::Hearts)
         {
             throw std::runtime_error("Wrong card symbol!");
         }
         this->value = val;
         this->symbol = sym;
-        this->name = static_cast<Name_t>(val);
+        this->name = static_cast<Name>(val);
     }
 
     friend std::ostream &operator<<(std::ostream &os, Card const &c)
@@ -79,16 +80,16 @@ struct Card
         std::string print_name;
         switch (c.symbol)
         {
-        case Hearts:
+        case Symbol::Hearts:
             print_symbol = "Hearts";
             break;
-        case Diamonds:
+        case Symbol::Diamonds:
             print_symbol = "Diamonds";
             break;
-        case Clubs:
+        case Symbol::Clubs:
             print_symbol = "Clubs";
             break;
-        case Spades:
+        case Symbol::Spades:
             print_symbol = "Spades";
             break;
         default:
@@ -97,20 +98,20 @@ struct Card
 
         switch (c.name)
         {
-        case 11:
+        case Name::Jack :
             print_name = "Jack";
             break;
-        case 12:
+        case Name::Queen :
             print_name = "Queen";
             break;
-        case 13:
+        case Name::King :
             print_name = "King";
             break;
-        case 14:
+        case Name::Ace :
             print_name = "Ace";
             break;
         default:
-            print_name = std::to_string(c.name);
+            print_name = std::to_string(static_cast<int>(c.name));
             break;
         }
 
@@ -121,8 +122,9 @@ struct Card
 
 struct Deck
 {
+    // TODO: koskntruktor
     std::vector<Card> cards;
-    
+
     friend std::ostream &operator<<(std::ostream &os, Deck const &d)
     {
         for (size_t i = 0; i < d.cards.size(); i++)
@@ -138,7 +140,7 @@ struct Deck
         {
             for (unsigned int intName = 11; intName < 15; intName++)
             {
-                cards.push_back(Card(static_cast<Symbol_t>(intSymbol), static_cast<Name_t>(intName)));
+                cards.push_back(Card(static_cast<Card::Symbol>(intSymbol), static_cast<Card::Name>(intName)));
             }
         }
     }
@@ -148,12 +150,12 @@ struct Deck
         {
             for (unsigned int val = 2; val < 11; val++)
             {
-                cards.push_back(Card(static_cast<Symbol_t>(intSymbol), val));
+                cards.push_back(Card(static_cast<Card::Symbol>(intSymbol), val));
             }
         }
     }
 
-    void init_deck()
+    void fill_deck()
     {
         generate_num_cards();
         generate_face_cards();
@@ -170,7 +172,7 @@ struct Deck
         std::mt19937 rng(rand_dev());
         std::shuffle(cards.begin(), cards.end(), rng);
          */
-        alg(cards, iterations);
+        alg(cards, iterations); //
     }
 
     size_t size()
@@ -180,13 +182,14 @@ struct Deck
 
     Card back()
     {
-        return cards.back();
+        return cards.back(); // TODO: referenz
     }
 };
 
 /**
  * @brief swaps two random cards of the deck
  */
+// TODO: lambda nicht an der stelle
 auto TRCShuffle = [](std::vector<Card> &cards, std::size_t iterations)
 {
     size_t deck_size = cards.size();
@@ -241,10 +244,7 @@ int put_on_table(Deck &deck, Deck &table)
     }
 }
 
-void move_to_trash(Deck &table)
+void move_to_trash(Deck &d)
 {
-    while (!table.cards.empty())
-    {
-        table.cards.pop_back();
-    }
+    d.cards.clear();
 }

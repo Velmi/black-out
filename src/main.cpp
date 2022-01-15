@@ -2,9 +2,9 @@
 #include <string>
 #include <array>
 #include <vector>
-//#include<fmt/format.h>
 #include <chrono>
 #include <thread>
+//#include<fmt/format.h>
 #include "game.hpp"
 #include "card.hpp"
 #include "player.hpp"

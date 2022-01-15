@@ -1,47 +1,68 @@
+#pragma once
+
 #include <iostream>
 #include "player.hpp"
 #include "card.hpp"
 #include "betmanager.hpp"
+#include "rulesmanager.hpp"
 
 
 struct GameManager
 {
-    enum class state
+    enum class State
     {
         Init,
         Players_turn,
         Dealers_turn,
-        Deck_check
+        End
     };
+
     Player player;
     Dealer dealer;
+    RulesManager rules_mng;
     BetManager bet_mng;
     Deck deck;
     Deck table;
-    state game_state = state::Init;
+    State game_state = State::Init;
 
     GameManager() :
             player{1000},
-            bet_mng{player.set_bet(), player.get_money()}
+            dealer{},
+            rules_mng{
+                [&](){return player.get_score();},
+                [&](){return dealer.get_score();},
+            },
+            bet_mng{[&](){return player.get_bet();},
+                    [&](unsigned int money){player.give_money<false>(money);},
+                    [&](){return rules_mng.get_winner();}
+            }
     {}
 
+    State get_state()
+    {
+        return this->game_state;
+    }
+
+    // state functions
     void Init()
     {
         std::cout << "\n +++ New game +++ \n";
         move_to_trash(table);
-        deck.init_deck();
+        deck.fill_deck();
         deck.shuffle(FYShuffle, 100);
     }
 
     int Players_turn()
     {
-        std::cout << "\n  Players turn  \n";
         player.score = 0;
+        dealer.score = 0;
+        std::cout << "\n  Players turn  \n";
+        bet_mng.collect_bet();
 
         for (char input = 'y'; (input == 'y') || (input == 'Y');)
         {
             put_on_table(deck, table);
-            if (table.back().name == Ace)
+            if (table.back().name == Card::Name::Ace)
             {
                 char input_ace;
                 std::cout << "Change Ace value from 11 to 1? (y or n): ";
@@ -62,28 +83,29 @@ struct GameManager
             std::cin >> input;
         }
 
-        if (player.score == 21)
+        switch (rules_mng.rules_check())
         {
-            player.rounds_won++;
-            std::cout << "21, Player wins! \n";
-            return 1;
+        case 0:
+            {
+                std::cout << "Your score: " << player.score << "\n";
+                game_state = State::Dealers_turn;
+                return 0;
+            }
+        case 1:
+        case 3:
+            {
+                return 1;
+            }
+
+        default:
+                break;
         }
-        if (player.score > 21)
-        {
-            std::cout << "Over 21, Dealer wins! \n";
-            return 2;
-        }
-        else
-        {
-            std::cout << "Your score: " << player.score << "\n";
-            return 3;
-        }
+        return -1;
     }
 
     int Dealers_turn()
     {
         std::cout << "\n  Dealers turn  \n";
-        dealer.score = 0;
         while (dealer.score < 17)
         {
             put_on_table(deck, table);
@@ -95,89 +117,94 @@ struct GameManager
             }
         }
 
-        if (dealer.score == 21)
+        switch (rules_mng.rules_check())
         {
-            std::cout << "21, Dealer wins! \n";
-            return 1;
+        case 0:
+            {
+                std::cout << "Dealers score: " << dealer.score << "\n";
+                return 0;
+            }
+        case 4:
+        case 6:
+            {
+                return 4;
+            }
+                break;
+        
+        default:
+            break;
         }
-        if (dealer.score > 21)
+        return -1;
+    }
+
+    int End()
+    {
+        bet_mng.cash_out();
+        if (deck.size() <= 13)
         {
-            player.rounds_won++;
-            std::cout << "Over 21, Player wins! \n";
-            return 2;
+            return 0;
         }
         else
         {
-            std::cout << "Dealers score: " << dealer.score << "\n";
-            if (dealer.score > player.score) {
-                dealer.score++;
-                std::cout << "Dealer wins! \n";
-            }
-            if (player.score > dealer.score) {
-                player.score++;
-                std::cout << "Player wins! \n";
-            }
-            if (player.score == dealer.score) {
-                std::cout << "Draw! \n";
-            }
-            return 3;
+            return 1;
         }
-    }
-
-    void set_bet()
-    {
-
     }
 
     void handler()
     {
         switch (game_state)
         {
-            case state::Init:
+        case State::Init:
             {
                 Init();
-                game_state = state::Players_turn;
+                game_state = State::Players_turn;
             }
                 break;
 
-            case state::Players_turn:
+        case State::Players_turn:
             {
                 switch (Players_turn())
                 {
-                    case 1:
-                    case 2:
+                case 0:
                     {
-                        game_state = state::Deck_check;
-                    }
+                        game_state = State::Dealers_turn;
                         break;
-                    case 3:
+                    }
+                case 1:
                     {
-                        game_state = state::Dealers_turn;
-                    }
+                        game_state = State::End;
                         break;
+                    }
+                
                 }
             }
                 break;
 
-            case state::Dealers_turn:
+        case State::Dealers_turn:
             {
                 Dealers_turn();
-                game_state = state::Deck_check;
+                game_state = State::End;
             }
                 break;
 
-            case state::Deck_check:
+        case State::End:
             {
-                if (deck.size() <= 13)
+                switch (End())
                 {
-                    game_state = state::Init;
-                }
-                else
-                {
-                    game_state = state::Players_turn;
+                case 0:
+                    {
+                        game_state = State::Init;
+                        break;
+                    }
+                case 1:
+                    {
+                        game_state = State::Players_turn;
+                        break;
+                    }
+                default:
+                    break;
                 }
             }
-                break;
         }
     }
 };
