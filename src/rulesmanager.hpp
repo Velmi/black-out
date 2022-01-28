@@ -2,7 +2,6 @@
 
 #include <iostream>
 #include <functional>
-#include <compare>
 #include "player.hpp"
 #include "game.hpp"
 
