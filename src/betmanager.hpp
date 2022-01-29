@@ -4,10 +4,10 @@
 
 struct BetManager
 {
-    unsigned int current_bet;
-    std::function<unsigned int(void)> collect_bet_from_player;
-    std::function<void(unsigned int)> cash_out_to_player;
-    std::function<unsigned int(void)> who_won;
+    unsigned int                        current_bet;
+    std::function<unsigned int(void)>   collect_bet_from_player;
+    std::function<void(unsigned int)>   cash_out_to_player;
+    std::function<unsigned int(void)>   who_won;
 
     template<   typename CollectTypeCallback,
                 typename CashOutTypeCallback,
@@ -21,9 +21,10 @@ struct BetManager
                 who_won{who_won_function}
     {}
 
-    void collect_bet()
+    int collect_bet()
     {
         current_bet = collect_bet_from_player();
+        return current_bet;
     }
 
     void cash_out()

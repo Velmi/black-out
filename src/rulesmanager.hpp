@@ -21,8 +21,8 @@ struct RulesManager
     WinningType winning_type;
     unsigned int player_score;
     unsigned int dealer_score;
-    std::function<unsigned int(void)>       get_score_from_player;
-    std::function<unsigned int(void)>       get_score_from_dealer;
+    std::function<unsigned int(void)> get_score_from_player;
+    std::function<unsigned int(void)> get_score_from_dealer;
 
     template<       typename GetPlayerScoreType,
                     typename GetDealerScoreType

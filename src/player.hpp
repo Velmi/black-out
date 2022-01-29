@@ -19,9 +19,14 @@ struct Player
         return this->score;
     }
 
-    unsigned int get_bet()
+    int get_bet()
     {
         unsigned int bet = 0;
+        if (wallet == 0)
+        {
+            return -1;
+        }
+        
         while (1)
         {
             std::cout << "Your wallet: " << wallet << "\nSet your bet: ";

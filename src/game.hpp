@@ -23,18 +23,21 @@ struct GameManager
     BetManager bet_mng;
     Deck deck;
     Deck table;
+    Shuffle shuffle;
     State game_state = State::Init;
 
     GameManager() :
             player{1000},
             dealer{},
-            rules_mng{
+            rules_mng
+            {
                 [&](){return player.get_score();},
                 [&](){return dealer.get_score();},
             },
-            bet_mng{[&](){return player.get_bet();},
-                    [&](unsigned int money){player.give_money<false>(money);},
-                    [&](){return rules_mng.get_winner();}
+            bet_mng
+            {   [&](){return player.get_bet();},
+                [&](unsigned int money){player.give_money<false>(money);},
+                [&](){return rules_mng.get_winner();}
             }
     {}
 
@@ -49,7 +52,7 @@ struct GameManager
         std::cout << "\n +++ New game +++ \n";
         move_to_trash(table);
         deck.fill_deck();
-        deck.shuffle(FYShuffle, 100);
+        deck.shuffle(shuffle.FisherYates, 100);
     }
 
     int Players_turn()
@@ -57,7 +60,11 @@ struct GameManager
         player.score = 0;
         dealer.score = 0;
         std::cout << "\n  Players turn  \n";
-        bet_mng.collect_bet();
+        
+        if (bet_mng.collect_bet() == -1)
+        {
+            return -1;
+        }
 
         for (char input = 'y'; (input == 'y') || (input == 'Y');)
         {
@@ -149,8 +156,9 @@ struct GameManager
             return 1;
         }
     }
+    // end state functions
 
-    void handler()
+    int handler()
     {
         switch (game_state)
         {
@@ -158,8 +166,8 @@ struct GameManager
             {
                 Init();
                 game_state = State::Players_turn;
-            }
                 break;
+            }
 
         case State::Players_turn:
             {
@@ -175,7 +183,8 @@ struct GameManager
                         game_state = State::End;
                         break;
                     }
-                
+                case -1:
+                    return -1;
                 }
             }
                 break;
@@ -206,5 +215,6 @@ struct GameManager
                 }
             }
         }
+    return 0;
     }
 };

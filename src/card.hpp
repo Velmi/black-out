@@ -4,16 +4,15 @@
 #include <vector>
 #include <random>
 #include <string>
+#include <functional>
 //#include<fmt/format.h>
 
 int get_random(int a, int b)
 {
-    int rand;
-    std::random_device rand_dev; // FIXME: performance!?
+    static std::random_device rand_dev;
     std::mt19937 rng(rand_dev());
     std::uniform_int_distribution<std::mt19937::result_type> dist(a, b);
-    rand = dist(rng);
-    return rand;
+    return dist(rng);
 }
 
 struct Card
@@ -122,7 +121,6 @@ struct Card
 
 struct Deck
 {
-    // TODO: koskntruktor
     std::vector<Card> cards;
 
     friend std::ostream &operator<<(std::ostream &os, Deck const &d)
@@ -157,6 +155,7 @@ struct Deck
 
     void fill_deck()
     {
+        cards.clear();
         generate_num_cards();
         generate_face_cards();
     }
@@ -168,11 +167,11 @@ struct Deck
          * hier eine sinnvolle shuffle-Implementierung, ich habe mich
          * aber für meine (weniger sinnvolle) entschieden, weil ich dann
          * da schön Funktionen als Templateparameter übergeben kann
-        std::random_device rand_dev;
+        static std::random_device rand_dev;
         std::mt19937 rng(rand_dev());
         std::shuffle(cards.begin(), cards.end(), rng);
          */
-        alg(cards, iterations); //
+        alg(cards, iterations);
     }
 
     size_t size()
@@ -180,45 +179,51 @@ struct Deck
         return cards.size();
     }
 
-    Card back()
+    Card& back()
     {
-        return cards.back(); // TODO: referenz
+        return cards.back();
     }
 };
 
-/**
- * @brief swaps two random cards of the deck
- */
-// TODO: lambda nicht an der stelle
-auto TRCShuffle = [](std::vector<Card> &cards, std::size_t iterations)
+struct Shuffle
 {
-    size_t deck_size = cards.size();
-    int rand1;
-    int rand2;
+    std::function<void(std::vector<Card>&, std::size_t)> FisherYates;
+    std::function<void(std::vector<Card>&, std::size_t)> TwoRandom;
 
-    for (std::size_t i = 0; i < iterations; i++)
+    Shuffle () : 
+    FisherYates
     {
-        rand1 = get_random(0, deck_size - 1);
-        rand2 = get_random(0, deck_size - 1);
-        std::swap<Card>(cards.at(rand1), cards.at(rand2));
-    }
-    std::cout << "Deck is shuffled \n";
-};
+        [](std::vector<Card>& cards, std::size_t iterations)
+        {
+            std::size_t deck_size = cards.size();
+            int rand1;
 
-/**
- * @brief swaps the first card with a random card of the deck (Fisher-Yates algorithm)
- */
-auto FYShuffle = [](std::vector<Card> &cards, std::size_t iterations)
-{
-    std::size_t deck_size = cards.size();
-    int rand1;
-
-    for (std::size_t i = 0; i < iterations; i++)
+            for (std::size_t i = 0; i < iterations; i++)
+            {
+                rand1 = get_random(0, deck_size - 1);
+                std::swap<Card>(cards.at(rand1), cards.at(0));
+            }
+            std::cout << "Deck is shuffled \n";
+        }
+    },
+    TwoRandom
     {
-        rand1 = get_random(0, deck_size - 1);
-        std::swap<Card>(cards.at(rand1), cards.at(0));
+        [](std::vector<Card>& cards, std::size_t iterations)
+        {
+            size_t deck_size = cards.size();
+            int rand1;
+            int rand2;
+
+            for (std::size_t i = 0; i < iterations; i++)
+            {
+                rand1 = get_random(0, deck_size - 1);
+                rand2 = get_random(0, deck_size - 1);
+                std::swap<Card>(cards.at(rand1), cards.at(rand2));
+            }
+            std::cout << "Deck is shuffled \n";
+        }
     }
-    std::cout << "Deck is shuffled \n";
+    {}
 };
 
 /**
@@ -231,7 +236,7 @@ int put_on_table(Deck &deck, Deck &table)
 {
     if (!deck.cards.empty())
     {
-        Card buffer = deck.cards.back();
+        Card buffer = deck.back();
         deck.cards.pop_back();
         table.cards.push_back(buffer);
         std::cout << "Card put on the table: ";

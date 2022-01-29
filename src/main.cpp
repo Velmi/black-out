@@ -17,9 +17,14 @@ int main()
 
     while (1)
     {
-        game.handler();
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        if (game.handler() == -1)
+        {
+            break;
+        }
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
+    std::cout << "Game over! \n";
 
     return 0;
 }
